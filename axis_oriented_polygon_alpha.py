@@ -243,10 +243,8 @@ bad = [
 open_cells_intersect( get_corners(good[0]), get_corners(good[1]) )
 
 # (ex.2) returns
-"""
-(True, array([[1, 2],
-       [1, 2]]))
-"""
+#(True, array([[1, 2],
+#       [1, 2]]))
 # because the cells overlap on [1,2]x[1,2]
 open_cells_intersect( get_corners(bad[0]), get_corners(bad[1]) )
 
