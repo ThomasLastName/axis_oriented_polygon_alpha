@@ -3,7 +3,9 @@ import warnings
 
 
 def get_corners(intervals):
+    # TODO this func would benefit from a check that intervals has the right shape
     """
+    
     A cell in R^d can be described, either, by its d interval sides, or by 2 d-dimensional corners.
     For example, the cell [a,b]x[c,d]x[e,f] in R^3 could be described by the two corners [ (a,c,e), (b,d,f) ].
     This function converts a list of intervals like [ [a,b], [c,d], [e,f] ] into corners [ [b,d,f], [a,c,e] ].
@@ -16,11 +18,12 @@ def get_corners(intervals):
 
 
 def get_intervals(cell):
+    # TODO this func would benefit from a check that intervals has the right shape
     """
 
-    Undo what get_intervals does to cell,
-    e.g., extract the corners [ [b,d,f], [a,c,e] ]
-    from the intervals [ [a,b], [c,d], [e,f] ].
+    Undo what get_corners does to a list of intervals,
+    e.g., recover the intervals [ [a,b], [c,d], [e,f] ]
+    from the corners [ [b,d,f], [a,c,e] ].
     Remarkabbly, the operation is involutive.
     
     """
@@ -30,7 +33,9 @@ def get_intervals(cell):
 
 
 def measure_cell( cell, volume=True ):
-    # WARNING:as written, this function can return negative length and volume
+    ##### ~~~
+    ## ~~~~ WARNING: as written, this function can return negative length and volume
+    #### ~~~
     if not (np.shape(cell)[0]==2 and len(np.shape(cell))==2):
         raise ValueError("Cell not formatted correctly.")
     upper_right  =  np.array( cell[0], dtype=np.float64 )
@@ -60,7 +65,7 @@ class ntangle_beta:
     '''
     fields:
         cells,
-        interval_form,
+        intervalss,
         number_of_cells,
         lengths_of_each_side,
         Lebesgue_measure,
@@ -98,7 +103,7 @@ class ntangle_beta:
         #
         # ~~~ assign attributes
         self.cells  =  list_of_cells
-        self.interval_form  =  np.array( list_of_lists_of_intervals, dtype=np.float64 )
+        self.intervals  =  np.array( list_of_lists_of_intervals, dtype=np.float64 )
         self.number_of_cells  =  len(list_of_cells)
         self.lengths_of_each_side  =  lengths_of_each_side
         self.Lebesgue_measure  =  Lebesgue_measure
