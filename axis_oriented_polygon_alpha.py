@@ -18,7 +18,7 @@ def get_corners(intervals):
 
 
 def get_intervals(cell):
-    # TODO this func would benefit from a check that intervals has the right shape
+    # TODO this func would benefit from a check that cell has the right shape
     """
 
     Undo what get_corners does to a list of intervals,
