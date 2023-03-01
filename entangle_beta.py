@@ -211,17 +211,22 @@ bad = [
     ]
 
 
-
+# returns (False, None)
 open_cells_intersect( good[0], good[1] )
 
+# returns (True, [[4, 1], [5, 2]])
 open_cells_intersect( bad[0], bad[1] )
 
+# returns (False, None)
 open_cells_intersect( bigger[0], bigger[1] )
 
+# runs and doen't return anything
 Omega = ntangle_beta(good)
+
+# provokes ValueError: Cells have non-disjoint interiors...
 Prompts_Error = ntangle_beta(bad)
 
-
+# sample 10 points chosen uniformlt at random from Omega = ([0,5]x[0,2]) \setminus ([0,1)X[0,1))
 Omega.sample(10)
 
 
