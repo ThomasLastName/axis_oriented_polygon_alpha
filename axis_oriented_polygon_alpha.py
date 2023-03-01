@@ -2,30 +2,31 @@ import numpy as np
 import warnings
 
 
-def get_intervals(cell):
+def get_corners(intervals):
     """
-
     A cell in R^d can be described, either, by its d interval sides, or by 2 d-dimensional corners.
-    For example, the cell [a,b]x[c,d]x[e,f] in R^3 could be described by [ (a,c,e), (b,d,f) ].
-    This function converts the latter array of corners back to a list of intervals,
-    e.g., convert corners=[ [b,d,f], [a,c,e] ] into intervals [ [a,b], [c,d], [e,f] ].
-    The transopose alone gives [ [b,a], [d,c], [f,e] ]. So, we need a second line reversing each row.
-    
+    For example, the cell [a,b]x[c,d]x[e,f] in R^3 could be described by the two corners [ (a,c,e), (b,d,f) ].
+    This function converts a list of intervals like [ [a,b], [c,d], [e,f] ] into corners [ [b,d,f], [a,c,e] ].
+    The transopose alone gives [ [a,c,e], [b,d,f] ].
+    Therefore, to get the "upper right" corner on top (an arbitrary convention), we first reverse each row.
+   
     """
-    foo = np.array(cell).T
-    return foo[:,::-1]
+    foo = np.array(intervals)[:,::-1]
+    return foo.T
 
 
-def make_cell(intervals):
+def get_intervals(cell):
     """
 
     Undo what get_intervals does to cell,
     e.g., extract the corners [ [b,d,f], [a,c,e] ]
-    from the intervals [ [a,b], [c,d], [e,f] ]
-
+    from the intervals [ [a,b], [c,d], [e,f] ].
+    Remarkabbly, the operation is involutive.
+    
     """
-    foo = np.array(intervals)[:,::-1]
+    foo = np.array(cell)[:,::-1]
     return foo.T
+
 
 
 def measure_cell( cell, volume=True ):
@@ -73,7 +74,7 @@ class ntangle_beta:
         #
         #~~~ first, convert each list of intervals into a pair of corners
         list_of_cells = [
-                make_cell(list_of_intervals).tolist()
+                get_corners(list_of_intervals).tolist()
                 for list_of_intervals in list_of_lists_of_intervals
             ]
         #
@@ -217,6 +218,7 @@ def open_cells_intersect( cell, CELL ):
     non_empty = np.all(indices_with_intersection)   # True IFF indices_with_intersection is all True
     if non_empty:
         intersection = np.vstack(( np.maximum(A,a), np.minimum(B,b) )).tolist()
+        intersection = get_intervals(intersection)
     else:
         intersection = None
     return non_empty, intersection
@@ -238,13 +240,18 @@ bad = [
 
 
 # (ex.1) returns (False, None)
-open_cells_intersect( make_cell(good[0]), make_cell(good[1]) )
+open_cells_intersect( get_corners(good[0]), get_corners(good[1]) )
 
-# (ex.2) returns (True, [[4, 1], [5, 2]])
-open_cells_intersect( make_cell(bad[0]), make_cell(bad[1]) )
+# (ex.2) returns
+"""
+(True, array([[1, 2],
+       [1, 2]]))
+"""
+# because the cells overlap on [1,2]x[1,2]
+open_cells_intersect( get_corners(bad[0]), get_corners(bad[1]) )
 
 # (ex.3) returns (False, None)
-open_cells_intersect( make_cell(bigger[0]), make_cell(bigger[1]) )
+open_cells_intersect( get_corners(bigger[0]), get_corners(bigger[1]) )
 
 # (ex.4) runs and doen't return anything
 Omega = ntangle_beta(good)
