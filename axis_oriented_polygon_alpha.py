@@ -124,6 +124,7 @@ class ntangle_beta:
     #   Check that the specified cells do not overlap
     #
     def check_disjointness(self):
+        # todo rewrite to get_intervals
         # computational burden is O(n^2)
         n = self.number_of_cells
         for i in range(n):
@@ -165,6 +166,7 @@ class ntangle_beta:
 
 
 def open_cells_intersect( cell, CELL ):
+    # todo rewrite to accept cells of either possible format, and call get_intervals instead of repeating its guts
     """
 
     first, convert the list of corners into a list of intervals,
