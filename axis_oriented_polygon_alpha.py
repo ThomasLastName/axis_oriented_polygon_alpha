@@ -144,6 +144,7 @@ class ntangle_beta:
     #   sample a point at random from a randomly chosen cell
     #
     def sample( self, N, with_time=None ):
+        # todo: rewrite to allow with_time to be a numeric value, too
         #
         # ~~~ decide which cell to sample
         number_of_cells  =  len(self.cells)
