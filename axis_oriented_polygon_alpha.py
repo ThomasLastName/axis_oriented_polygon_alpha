@@ -34,10 +34,11 @@ def get_intervals(corners):
 
 def measure_cell( corners, volume=True ):
     # todo: is it possible to include a check that data is supplied in corner format, or possible to accept data supplied in either format?
+    # todo: would it be good to add a required "dimension" argument in order to force the user to be careful?
     ##### ~~~
     ## ~~~~ WARNING: as written, this function can return negative length and volume
     #### ~~~
-    if not (np.shape(cell)[0]==2 and len(np.shape(cell))==2):
+    if not (np.shape(corners)[0]==2 and len(np.shape(corners))==2):
         raise ValueError("Cell not formatted correctly.")
     upper_right  =  np.array( corners[0], dtype=np.float64 )
     lower_left   =  np.array( corners[1], dtype=np.float64 )
@@ -78,6 +79,7 @@ class ntangle_beta:
     #
     def __init__(self,list_of_lists_of_intervals):
         # todo: add a required argument format (one of "intervals" or "corners") with no default value thus forcing the user to be careful
+        # todo: in order to further force the user to be careful, don't infer "dimension" but rather force the user to specify it as a third argument
         #
         #~~~ first, convert each list of intervals into a pair of corners
         list_of_cells = [
