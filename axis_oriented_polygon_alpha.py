@@ -17,7 +17,7 @@ def get_corners(intervals):
     return foo.T
 
 
-def get_intervals(cell):
+def get_intervals(corners):
     # TODO this func would benefit from a check that cell has the right shape
     """
 
@@ -27,19 +27,20 @@ def get_intervals(cell):
     Remarkabbly, the operation is involutive.
     
     """
-    foo = np.array(cell)[:,::-1]
+    foo = np.array(corners)[:,::-1]
     return foo.T
 
 
 
-def measure_cell( cell, volume=True ):
+def measure_cell( corners, volume=True ):
+    # todo: is it possible to include a check that data is supplied in corner format, or possible to accept data supplied in either format?
     ##### ~~~
     ## ~~~~ WARNING: as written, this function can return negative length and volume
     #### ~~~
     if not (np.shape(cell)[0]==2 and len(np.shape(cell))==2):
         raise ValueError("Cell not formatted correctly.")
-    upper_right  =  np.array( cell[0], dtype=np.float64 )
-    lower_left   =  np.array( cell[1], dtype=np.float64 )
+    upper_right  =  np.array( corners[0], dtype=np.float64 )
+    lower_left   =  np.array( corners[1], dtype=np.float64 )
     lengths  =  (upper_right - lower_left).tolist()
     if volume:
         Lebesgue_measure  =  np.prod( lengths, dtype=np.float64 )
@@ -48,17 +49,17 @@ def measure_cell( cell, volume=True ):
     return lengths, Lebesgue_measure
 
 
-def measure_multiple_cells( list_of_cells, volume=True ):
-        lengths_of_each_side  =  list()
-        Lebesgue_measure  =  list()
-        for cell in list_of_cells:
-            lengths, volume  =  measure_cell(cell,volume)
-            lengths_of_each_side.append(lengths)
-            Lebesgue_measure.append(volume)
-        return (
-            np.array( lengths_of_each_side, dtype=np.float64 ),
-            Lebesgue_measure
-            )
+def measure_multiple_cells( list_of_corner_pairs, volume=True ):
+    lengths_of_each_side  =  list()
+    Lebesgue_measure  =  list()
+    for corners in list_of_corner_pairs:
+        lengths, volume  =  measure_cell(corners,volume)
+        lengths_of_each_side.append(lengths)
+        Lebesgue_measure.append(volume)
+    return (
+        np.array( lengths_of_each_side, dtype=np.float64 ),
+        Lebesgue_measure
+        )
 
 
 class ntangle_beta:
@@ -76,6 +77,7 @@ class ntangle_beta:
     #   define the fields
     #
     def __init__(self,list_of_lists_of_intervals):
+        # todo: add a required argument format (one of "intervals" or "corners") with no default value thus forcing the user to be careful
         #
         #~~~ first, convert each list of intervals into a pair of corners
         list_of_cells = [
