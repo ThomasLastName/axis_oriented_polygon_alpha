@@ -75,9 +75,9 @@ class ntangle_beta:
         dimension
     '''
     #
-    #   define the fields
+    #   define the attributes
     #
-    def __init__(self,list_of_lists_of_intervals):
+    def __init__( self, list_of_lists_of_intervals, enforce_disjoint_interiors=True ):
         # todo: add a required argument format (one of "intervals" or "corners") with no default value thus forcing the user to be careful
         # todo: in order to further force the user to be careful, don't infer "dimension" but rather force the user to specify it as a third argument
         #
@@ -116,7 +116,8 @@ class ntangle_beta:
         #
         # ~~~ run a sanity check or two
         self.check_nondegeneracy()
-        self.check_disjointness()
+        if enforce_disjoint_interiors:
+            self.check_disjointness()
     #
     #   Check that each specified cell is non-empty
     #
