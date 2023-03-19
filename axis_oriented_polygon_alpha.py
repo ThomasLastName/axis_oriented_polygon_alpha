@@ -51,14 +51,14 @@ def measure_cell( corners, volume=True ):
 
 def measure_multiple_cells( list_of_corner_pairs, volume=True ):
     lengths_of_each_side  =  list()
-    Lebesgue_measure  =  list()
+    Lebesgue_measures  =  list()
     for corners in list_of_corner_pairs:
         lengths, volume  =  measure_cell(corners,volume)
         lengths_of_each_side.append(lengths)
-        Lebesgue_measure.append(volume)
+        Lebesgue_measures.append(volume)
     return (
         np.array( lengths_of_each_side, dtype=np.float64 ),
-        Lebesgue_measure
+        np.array( Lebesgue_measures, dtype=np.float64 )
         )
 
 
@@ -81,34 +81,36 @@ class axis_oriented_polygon:
         # todo: in order to further force the user to be careful, don't infer "dimension" but rather force the user to specify it as a third argument
         #
         #~~~ first, convert each list of intervals into a pair of corners
-        list_of_cells = [
+        list_of_cells = np.array([
                 get_corners(list_of_intervals).tolist()
                 for list_of_intervals in list_of_lists_of_intervals
-            ]
+            ], dtype=np.float64 )
+        list_of_lists_of_intervals  =  np.array( list_of_lists_of_intervals, dtype=np.float64 )
         #
         # ~~~ check a couple of simple size requirements
         shape = np.shape(list_of_cells)
         if not len(shape)==3:
-            raise ValueError("Cells nor formatted correctly.")
+            raise ValueError("Cells not formatted correctly.")
         if not shape[1]==2:
-            raise ValueError("Cells nor formatted correctly.")
+            raise ValueError("Cells not formatted correctly.")
         #
         # ~~~ gather data
         lengths_of_each_side, Lebesgue_measure  =  measure_multiple_cells(list_of_cells)
         weights  =  Lebesgue_measure / np.sum(Lebesgue_measure)
-        list_of_cells = np.array( list_of_cells, dtype=np.float64 )
         #
-        # ~~~ throw away and degenerate cells
-        non_degenerate_ones = np.where( np.all(lengths_of_each_side>0, axis=0) )
+        # ~~~ now, we have enough data to detect if there are degenerate cells and discard them
+        non_degenerate_ones  =  np.where( np.all(lengths_of_each_side>0, axis=1) )
         if len(non_degenerate_ones[0])<len(list_of_cells):
-            warnings.warn("Degenerate cells detected.")
-            if enforce_disjoint_interiors:
-                list_of_cells = list_of_cells[non_degenerate_ones]
-                warnings.warn("Degenerate cells discarded.")
+            warnings.warn("Degenerate cells detected and discarded.")
+            list_of_cells  =  list_of_cells[non_degenerate_ones]
+            list_of_lists_of_intervals  =  list_of_lists_of_intervals[non_degenerate_ones]
+            lengths_of_each_side  =  lengths_of_each_side[non_degenerate_ones]
+            Lebesgue_measure  =  Lebesgue_measure[non_degenerate_ones]
+            weights  =  weights[non_degenerate_ones]
         #
         # ~~~ assign attributes
         self.cells  =  list_of_cells
-        self.intervals  =  np.array( list_of_lists_of_intervals, dtype=np.float64 )
+        self.intervals  =  list_of_lists_of_intervals
         self.number_of_cells  =  len(list_of_cells)
         self.lengths_of_each_side  =  lengths_of_each_side
         self.Lebesgue_measure  =  Lebesgue_measure
@@ -116,7 +118,7 @@ class axis_oriented_polygon:
         self.dimension  =  len(list_of_cells[0][0])
         #
         # ~~~ run a sanity check or two
-        self.check_nondegeneracy()
+        # self.check_nondegeneracy()
         if enforce_disjoint_interiors:
             self.check_disjointness()
     #
@@ -316,10 +318,15 @@ bad = [
             [ [0,2], [1,2] ],   # the Cartesian product [0,2]x[1,2]
             [ [1,5], [0,2] ]    # the Cartesian product [1,5]x[0,2]
     ]
+very_bad = [
+            [ [2,0], [1,2] ],   # non-sense
+            [ [1,5], [0,2] ]    # the same as above
+    ]
 
 
 # (ex.1) returns (False, None)
 open_cells_intersect( get_corners(good[0]), get_corners(good[1]) )
+
 
 # (ex.2) returns
 #(True, array([[1, 2],
@@ -327,22 +334,35 @@ open_cells_intersect( get_corners(good[0]), get_corners(good[1]) )
 # because the cells overlap on [1,2]x[1,2]
 open_cells_intersect( get_corners(bad[0]), get_corners(bad[1]) )
 
+
 # (ex.3) returns (False, None)
 open_cells_intersect( get_corners(bigger[0]), get_corners(bigger[1]) )
+
 
 # (ex.4) runs and doen't return anything
 Omega = axis_oriented_polygon(good)
 
-# (ex.5) provokes the warning: Cells have non-disjoint interiors...
-Prompts_Error = axis_oriented_polygon(bad)
 
-# (ex.6) equivalent to ex.1, returns (False, None)
+# (ex.5) provokes the UserWarning: Cells have non-disjoint interiors...
+prompts_warning = axis_oriented_polygon(bad)
+
+
+# (ex.6) provokes the UserWarning: Degenerate cells detected and discarded.
+prompts_warning = axis_oriented_polygon(very_bad)
+# returns
+#array([[[1., 5.],
+#        [0., 2.]]])
+prompts_warning.intervals
+
+# (ex.7) equivalent to ex.1, returns (False, None)
 open_cells_intersect( Omega.cells[0], Omega.cells[1] )
 
-# (ex.7) sample 10 points chosen uniformlt at random from Omega = ([0,5]x[0,2]) \setminus ([0,1)X[0,1))
+
+# (ex.8) sample 10 points chosen uniformly at random from Omega = ([0,5]x[0,2]) \setminus ([0,1)X[0,1))
 Omega.sample(10)
 
-# (ex.8) boundary of the cell [-9,0]x[1,2]
+
+# (ex.9) boundary of the cell [-9,0]x[1,2]
 bd = boundary( [
             [[1,2]],
             [[1,2]],
@@ -354,4 +374,4 @@ bd = boundary( [
     )
 bd.sample( 20, with_time=[10,11] )
 
-#
+
